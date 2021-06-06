@@ -24,6 +24,7 @@ public class NotesManager : MonoBehaviour
 
     //Set from editor
     public GameObject blockPrefab;
+    public GameObject sparklePrefab;
     public GameObject leftTracker;
     public GameObject rightTracker;
     public float rowWidth;
@@ -95,25 +96,25 @@ public class NotesManager : MonoBehaviour
                 direction = 1;
                 break;
             case 1:
-                direction = 7;
+                direction = 6;
                 break;
             case 2:
-                direction = 3;
+                direction = 2;
                 break;
             case 3:
-                direction = 5;
+                direction = 4;
                 break;
             case 4:
                 direction = 0;
                 break;
             case 5:
-                direction = 4;
+                direction = 5;
                 break;
             case 6:
-                direction = 2;
+                direction = 3;
                 break;
             case 7:
-                direction = 6;
+                direction = 7;
                 break;
             default:
                 Debug.LogWarning("Unable to recognize angle");
@@ -193,21 +194,18 @@ public class NotesManager : MonoBehaviour
         this.player = GetComponent<AudioSource>();
         this.velocity = new Vector3(0, 0, -this.speed);
         //For testing
-        this.notes.Add(new Note(5, 0, 0, 0, 8));
-        this.notes.Add(new Note(10, 1, 1, 1, 1));
-        this.notes.Add(new Note(15, 2, 2, 0, 2));
-        this.notes.Add(new Note(7.5F, 0, 0, 0, 0));
-        this.notes.Add(new Note(7.5F, 1, 0, 1, 1));
-        this.notes.Add(new Note(7.5F, 2, 0, 0, 2));
-        this.notes.Add(new Note(7.5F, 3, 0, 1, 3));
-        this.notes.Add(new Note(7.5F, 0, 1, 0, 4));
-        this.notes.Add(new Note(7.5F, 1, 1, 1, 5));
-        this.notes.Add(new Note(7.5F, 2, 1, 0, 6));
-        this.notes.Add(new Note(7.5F, 3, 1, 1, 7));
-        this.notes.Add(new Note(7.5F, 0, 2, 0, 8));
-        this.notes.Add(new Note(7.5F, 1, 2, 1, 8));
-        this.notes.Add(new Note(7.5F, 2, 2, 0, 8));
-        this.notes.Add(new Note(7.5F, 3, 2, 1, 8));
+        this.notes.Add(new Note(2, 0, 0, 0, 0));
+        this.notes.Add(new Note(2, 1, 0, 1, 1));
+        this.notes.Add(new Note(2, 2, 0, 0, 2));
+        this.notes.Add(new Note(2, 3, 0, 1, 3));
+        this.notes.Add(new Note(2, 0, 1, 0, 4));
+        this.notes.Add(new Note(2, 1, 1, 1, 5));
+        this.notes.Add(new Note(2, 2, 1, 0, 6));
+        this.notes.Add(new Note(2, 3, 1, 1, 7));
+        this.notes.Add(new Note(2, 0, 2, 0, 8));
+        this.notes.Add(new Note(2, 1, 2, 1, 8));
+        this.notes.Add(new Note(2, 2, 2, 0, 8));
+        this.notes.Add(new Note(2, 3, 2, 1, 8));
         this.time = 0;
         this.play();
         this.createBlocks();
@@ -235,6 +233,11 @@ public class NotesManager : MonoBehaviour
         {
             rightFirst = new Vector3(rightTracker.transform.position.x, rightTracker.transform.position.y, this.time);
         }
+        if (OVRInput.Get(OVRInput.Button.One))
+        {
+            Instantiate(sparklePrefab, new Vector3(rightTracker.transform.position.x, rightTracker.transform.position.y, rightTracker.transform.position.z), Quaternion.identity);
+            Debug.Log("Spawning sparkle");
+        }
         if (OVRInput.GetUp(OVRInput.Button.One))
         {
             Vector2 avg = new Vector2((rightFirst.x + rightTracker.transform.position.x) / 2, (rightFirst.y + rightTracker.transform.position.y) / 2);
@@ -255,6 +258,11 @@ public class NotesManager : MonoBehaviour
         {
             leftFirst = new Vector3(leftTracker.transform.position.x, leftTracker.transform.position.y, this.time);
         }
+        if (OVRInput.Get(OVRInput.Button.Three))
+        {
+            Instantiate(sparklePrefab, new Vector3(leftTracker.transform.position.x, leftTracker.transform.position.y, leftTracker.transform.position.z), Quaternion.identity);
+            Debug.Log("Spawning sparkle");
+        }
         if (OVRInput.GetUp(OVRInput.Button.Three))
         {
             Vector2 avg = new Vector2((leftFirst.x + leftTracker.transform.position.x) / 2, (leftFirst.y + leftTracker.transform.position.y) / 2);
@@ -270,6 +278,16 @@ public class NotesManager : MonoBehaviour
             Note newNote = new Note(leftFirst.z, currentX, currentY, 0, xyToDirection(deltaX, deltaY));
             this.generateNoteBlock(newNote);
             this.notes.Add(newNote);
+        }
+
+        //For testing. Right stick deletes everything.
+        if (OVRInput.GetDown(OVRInput.Button.SecondaryThumbstick))
+        {
+            foreach (Note note in notes)
+            {
+                Destroy(note.block);
+            }
+            this.notes = new List<Note>();
         }
     }
 
