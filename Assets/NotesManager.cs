@@ -5,17 +5,8 @@ using UnityEngine;
 public class NotesManager : MonoBehaviour
 {
     public List<Note> notes;
-
-    // Map/song data
-    public string type;
-    public string difficulty;
-    public int rank;
-    public float speed;
-    public string title;
-    public string subtitle;
-    public string artist;
-    public string mapper;
-    public List<float> bpm;
+    public Song songData;
+    public Difficulty difficultyData;
 
     public Material leftMat;
     public Material rightMat;
@@ -37,7 +28,7 @@ public class NotesManager : MonoBehaviour
     Vector3 leftFirst;
     Vector3 rightFirst;
 
-    void createBlocks()
+    public void createBlocks()
     {
         foreach (Note note in notes)
         {
@@ -50,17 +41,23 @@ public class NotesManager : MonoBehaviour
 
         foreach(Note note in notes)
         {
-            generateNoteBlock(note);
+            if (note.type == 1 || note.type == 0)
+            {
+                generateNoteBlock(note);
+            } else
+            {
+                generateBomb(note);
+            }
         }
     }
 
-    void pause()
+    public void pause()
     {
         this.playing = false;
         this.player.Pause();
     }
 
-    void play()
+    public void play()
     {
         this.playing = true;
         this.player.Play();
@@ -155,7 +152,7 @@ public class NotesManager : MonoBehaviour
 
     void generateNoteBlock(Note note)
     {
-        GameObject block = (GameObject)Instantiate(this.blockPrefab, new Vector3((note.x - 1.5F) * this.rowWidth, (note.y + 1F) * this.columnHeight, (note.time - this.time) * this.speed), Quaternion.identity);
+        GameObject block = (GameObject)Instantiate(this.blockPrefab, new Vector3((note.x - 1.5F) * this.rowWidth, (note.y + 1F) * this.columnHeight, (note.time - this.time) * this.difficultyData.speed), Quaternion.identity);
         if (note.direction == 8)
         {
             GameObject toDeactivate = block.transform.Find("ArrowBlock")?.gameObject;
@@ -188,12 +185,31 @@ public class NotesManager : MonoBehaviour
         note.block = block;
     }
 
+    //Currently marks bombs as grey notes
+    void generateBomb(Note note)
+    {
+        GameObject block = (GameObject)Instantiate(this.blockPrefab, new Vector3((note.x - 1.5F) * this.rowWidth, (note.y + 1F) * this.columnHeight, (note.time - this.time) * this.difficultyData.speed), Quaternion.identity);
+        GameObject toDeactivate = block.transform.Find("ArrowBlock")?.gameObject;
+        if (toDeactivate)
+        {
+            toDeactivate.SetActive(false);
+        }
+        else
+        {
+            Debug.Log("Unable to find arrow block to disable");
+        }
+        note.block = block;
+    }
+
     // Start is called before the first frame update
     void Start() {
+        this.difficultyData = new Difficulty();
+        this.songData = new Song();
         this.notes = new List<Note>();
         this.player = GetComponent<AudioSource>();
-        this.velocity = new Vector3(0, 0, -this.speed);
+        this.velocity = new Vector3(0, 0, -this.difficultyData.speed);
         //For testing
+        /*
         this.notes.Add(new Note(2, 0, 0, 0, 0));
         this.notes.Add(new Note(2, 1, 0, 1, 1));
         this.notes.Add(new Note(2, 2, 0, 0, 2));
@@ -209,6 +225,7 @@ public class NotesManager : MonoBehaviour
         this.time = 0;
         this.play();
         this.createBlocks();
+        */
     }
 
     // Update is called once per frame
@@ -299,7 +316,45 @@ public class NotesManager : MonoBehaviour
         }
         foreach (Note note in notes)
         {
-            note.block.transform.position = new Vector3((note.x - 1.5F) * this.rowWidth, (note.y + 1F) * this.columnHeight, (note.time - this.time) * this.speed);
+            note.block.transform.position = new Vector3((note.x - 1.5F) * this.rowWidth, (note.y + 1F) * this.columnHeight, (note.time - this.time) * this.difficultyData.speed);
         }
+    }
+}
+
+public struct Song
+{
+    public string title;
+    public string subtitle;
+    public string artist;
+    public string mapper;
+    public List<float> bpmValues;
+    public List<float> bpmTimes;
+}
+
+
+public struct Difficulty
+{
+    public string type;
+    public string difficulty;
+    public float speed;
+}
+
+public class Note
+{
+    public float time;
+    public int x;
+    public int y;
+    public int type;
+    public int direction;
+    public GameObject block;
+
+    public Note(float time = 0, int x = 0, int y = 0, int type = 1, int direction = 8)
+    {
+        this.time = time;
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.direction = direction;
+        this.block = null;
     }
 }
